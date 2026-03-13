@@ -1,0 +1,10 @@
+# Override: bind API and frontend to localhost only (use with Nginx reverse proxy on same host).
+# Run: docker compose -f cloud/vultr/docker-compose.vultr.yml -f cloud/vultr/docker-compose.nginx.yml --env-file .env up -d
+
+services:
+  api:
+    ports:
+      - "127.0.0.1:8000:8000"
+  frontend:
+    ports:
+      - "127.0.0.1:3000:3000"

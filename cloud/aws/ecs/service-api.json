@@ -1,0 +1,22 @@
+{
+  "cluster": "stock-ai-cluster",
+  "serviceName": "stock-ai-api",
+  "taskDefinition": "stock-ai-api",
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": ["subnet-xxx", "subnet-yyy"],
+      "securityGroups": ["sg-xxx"],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:REGION:ACCOUNT_ID:targetgroup/stock-ai-api/xxx",
+      "containerName": "api",
+      "containerPort": 8000
+    }
+  ],
+  "healthCheckGracePeriodSeconds": 60
+}

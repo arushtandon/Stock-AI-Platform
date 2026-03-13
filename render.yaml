@@ -1,0 +1,110 @@
+# Stock AI Platform - Render Blueprint
+# Deploy: Render Dashboard → New → Blueprint → connect this repo.
+# Cost: Free/Starter Postgres + Free Redis + Free/Starter web (much cheaper than Vultr $150/mo).
+
+databases:
+  - name: stock-ai-db
+    databaseName: stock_ai
+    plan: free  # 1 GB, 90-day limit; use starter (~$7/mo) for production
+
+services:
+  - type: keyvalue
+    name: stock-ai-redis
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+    plan: free
+    maxmemoryPolicy: noeviction
+
+  - type: web
+    name: stock-ai-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stock-ai-db
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: port
+      - key: CORS_ORIGINS
+        value: https://stock-ai-frontend.onrender.com
+      - key: DANELFIN_API_KEY
+        sync: false
+      - key: SEEKING_ALPHA_API_KEY
+        sync: false
+      - key: INVESTING_PRO_API_KEY
+        sync: false
+      - key: TRADINGVIEW_API_KEY
+        sync: false
+
+  - type: worker
+    name: stock-ai-worker
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A workers.celery_app worker -l info -Q default,daily
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stock-ai-db
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: port
+
+  - type: cron
+    name: stock-ai-daily
+    runtime: python
+    schedule: "0 14 * * 1-5"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/render_daily.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stock-ai-db
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: stock-ai-redis
+          property: port
+
+  - type: web
+    name: stock-ai-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NODE_VERSION
+        value: "20"

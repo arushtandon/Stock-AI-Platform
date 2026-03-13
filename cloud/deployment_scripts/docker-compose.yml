@@ -1,0 +1,63 @@
+# Stock AI Platform - Docker Compose (dev / single-node)
+version: "3.8"
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.api
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/stock_ai
+      - REDIS_URL=redis://redis:6379/0
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    depends_on:
+      - db
+      - redis
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+  worker:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.worker
+    command: celery -A workers.celery_app worker -l info -Q default,daily
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/stock_ai
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+  beat:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.worker
+    command: celery -A workers.celery_app beat -l info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stock_ai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+volumes:
+  pgdata:

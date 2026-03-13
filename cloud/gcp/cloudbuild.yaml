@@ -1,0 +1,31 @@
+# Google Cloud Build - build and push images (run from repo root: gcloud builds submit --config=cloud/gcp/cloudbuild.yaml .)
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-api
+    args: ['build', '-f', 'cloud/deployment_scripts/Dockerfile.api', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/api:${SHORT_SHA}', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/api:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-api
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/api']
+    waitFor: ['build-api']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-worker
+    args: ['build', '-f', 'cloud/deployment_scripts/Dockerfile.worker', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/worker:${SHORT_SHA}', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/worker:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-worker
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/worker']
+    waitFor: ['build-worker']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-frontend
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/frontend:${SHORT_SHA}', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/frontend:latest', './frontend']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-frontend
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/stock-ai/frontend']
+    waitFor: ['build-frontend']
+
+substitutions:
+  _REGION: us-central1
+
+options:
+  logging: CLOUD_LOGGING_ONLY

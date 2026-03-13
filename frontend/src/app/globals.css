@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-geist-sans: 'Inter', system-ui, sans-serif;
+  --font-geist-mono: ui-monospace, monospace;
+  --surface-950: #020617;
+  --surface-900: #0f172a;
+  --primary-500: #0ea5e9;
+}
+
+body {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+}
+
+.card {
+  @apply bg-surface-900/80 backdrop-blur border border-slate-700/50 rounded-xl shadow-xl;
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white font-medium transition;
+}

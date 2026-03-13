@@ -1,0 +1,52 @@
+# Stock AI Platform - Vultr deployment
+# Uses Vultr Managed PostgreSQL and Managed Redis (set DATABASE_URL, REDIS_URL in .env).
+# Run from repo root: docker compose -f cloud/vultr/docker-compose.vultr.yml --env-file .env up -d --build
+# (env_file path is relative to this file; use ../../.env for .env at repo root)
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.api
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: ../../.env
+    environment:
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://localhost:3000}
+    # No depends_on: db/redis - they are external (Vultr Managed)
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - api
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.worker
+    command: celery -A workers.celery_app worker -l info -Q default,daily
+    restart: unless-stopped
+    env_file: ../../.env
+    depends_on:
+      - api
+
+  beat:
+    build:
+      context: ../..
+      dockerfile: cloud/deployment_scripts/Dockerfile.worker
+    command: celery -A workers.celery_app beat -l info
+    restart: unless-stopped
+    env_file: ../../.env
+    depends_on:
+      - worker

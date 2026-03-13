@@ -1,0 +1,107 @@
+# Build and push Docker images for cloud deployment.
+# Trigger on push to main; configure AWS/GCP/Azure secrets in repo settings.
+name: Build and push (cloud)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  REGISTRY: ""
+
+jobs:
+  # AWS ECR
+  build-push-aws:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.cloud == 'aws')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set ECR registry
+        id: ecr
+        run: |
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          AWS_REGION=${AWS_REGION:-us-east-1}
+          echo "registry=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com" >> $GITHUB_OUTPUT
+
+      - name: Build and push API
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: cloud/deployment_scripts/Dockerfile.api
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/stock-ai-api:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/stock-ai-api:latest
+
+      - name: Build and push Worker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: cloud/deployment_scripts/Dockerfile.worker
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/stock-ai-worker:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/stock-ai-worker:latest
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/stock-ai-frontend:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/stock-ai-frontend:latest
+
+  # GCP Artifact Registry (optional)
+  build-push-gcp:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.cloud == 'gcp'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker meta (GCP)
+        id: meta
+        run: |
+          echo "registry=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/stock-ai" >> $GITHUB_OUTPUT
+
+      - name: Build and push API
+        run: |
+          docker build -f cloud/deployment_scripts/Dockerfile.api -t ${{ steps.meta.outputs.registry }}/api:${{ github.sha }} .
+          docker push ${{ steps.meta.outputs.registry }}/api:${{ github.sha }}
+
+      - name: Build and push Worker
+        run: |
+          docker build -f cloud/deployment_scripts/Dockerfile.worker -t ${{ steps.meta.outputs.registry }}/worker:${{ github.sha }} .
+          docker push ${{ steps.meta.outputs.registry }}/worker:${{ github.sha }}
+
+      - name: Build and push Frontend
+        run: |
+          docker build -t ${{ steps.meta.outputs.registry }}/frontend:${{ github.sha }} ./frontend
+          docker push ${{ steps.meta.outputs.registry }}/frontend:${{ github.sha }}

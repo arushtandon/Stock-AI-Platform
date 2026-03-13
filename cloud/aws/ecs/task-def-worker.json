@@ -1,0 +1,29 @@
+{
+  "family": "stock-ai-worker",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "worker",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/stock-ai-worker:latest",
+      "command": ["celery", "-A", "workers.celery_app", "worker", "-l", "info", "-Q", "default,daily"],
+      "essential": true,
+      "environment": [{ "name": "PYTHONPATH", "value": "/app" }],
+      "secrets": [
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:stock-ai/database-url" },
+        { "name": "REDIS_URL", "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:stock-ai/redis-url" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/stock-ai-worker",
+          "awslogs-region": "REGION"
+        }
+      }
+    }
+  ]
+}
