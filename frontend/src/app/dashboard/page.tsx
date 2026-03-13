@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -55,27 +56,44 @@ function groupByHoldingPeriod(list: Rec[]): Record<string, Rec[]> {
   return groups;
 }
 
+function useClock() {
+  const [now, setNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const time = now.toLocaleTimeString(undefined, { hour12: false });
+  const date = now.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  return { time, date };
+}
+
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['recommendations'],
     queryFn: fetchRecommendations,
   });
+  const { time, date } = useClock();
 
   const list: Rec[] = Array.isArray(data) ? data : [];
   const byPeriod = groupByHoldingPeriod(list);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="animate-pulse text-slate-400">Loading recommendations...</div>
       </div>
     );
   }
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#020617]">
-        <Image src="/safron-logo.svg" alt="Safron" width={140} height={48} className="mb-6 h-10 w-auto" />
-        <div className="card p-8 max-w-md text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <Image src="/safron-logo.svg" alt="Safron" width={200} height={72} className="mb-10 h-14 w-auto" />
+        <div className="card p-8 max-w-md text-center bg-slate-900/80">
           <p className="text-red-400 mb-4">Could not load recommendations from the API.</p>
           <button onClick={() => refetch()} className="btn-primary">Retry</button>
         </div>
@@ -84,16 +102,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617]">
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Image src="/safron-logo.svg" alt="Safron" width={140} height={48} className="h-10 w-auto" />
-            <div>
-              <h1 className="text-xl font-semibold text-white">Safron Recommendation Model</h1>
-              <p className="text-slate-500 text-xs">Internal only · Capital per idea: USD 100,000</p>
-            </div>
+    <div className="min-h-screen bg-black text-slate-100">
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Top banner with logo and clock */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <Image src="/safron-logo.svg" alt="Safron" width={220} height={80} className="h-16 w-auto" />
           </div>
+          <div className="text-right">
+            <div className="text-4xl md:text-5xl font-semibold tracking-[0.25em] text-slate-100">
+              {time}
+            </div>
+            <div className="text-slate-400 text-sm mt-1">{date}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-slate-500 text-xs uppercase tracking-[0.25em]">
+            Safron recommendation model · Capital per idea: USD 100,000
+          </p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => refetch()}
@@ -115,7 +142,7 @@ export default function DashboardPage() {
           {HOLDING_PERIOD_GROUPS.map(({ key, title }) => {
             const recs = (byPeriod[key] || []).slice(0, 10);
             return (
-              <div key={key} className="card p-5">
+              <div key={key} className="card p-5 bg-slate-900/80">
                 <h3 className="text-white font-medium mb-4">{title}</h3>
                 {recs.length === 0 ? (
                   <p className="text-slate-500 text-sm">No recommendations for this period yet.</p>
@@ -124,7 +151,7 @@ export default function DashboardPage() {
                     {recs.map((r) => (
                       <div
                         key={r.symbol}
-                        className="flex items-center justify-between py-2 border-b border-slate-700/50 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-slate-800 last:border-0"
                       >
                         <div className="flex-1 min-w-0">
                           <Link
