@@ -53,6 +53,17 @@ def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
 
+@app.get("/api/v1/integrations/status")
+def integrations_status():
+    """Which premium data sources have credentials configured (no values exposed)."""
+    return {
+        "danelfin": bool(os.getenv("DANELFIN_API_KEY")),
+        "seeking_alpha": bool(os.getenv("SEEKING_ALPHA_API_KEY")),
+        "investing_pro": bool(os.getenv("INVESTING_PRO_API_KEY")),
+        "tradingview": bool(os.getenv("TRADINGVIEW_API_KEY")),
+    }
+
+
 @app.get("/api/v1/recommendations", response_model=list)
 @limiter.limit("60/minute")
 def list_recommendations(

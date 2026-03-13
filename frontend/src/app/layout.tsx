@@ -6,8 +6,8 @@ import { Providers } from '@/components/Providers';
 const inter = Inter({ subsets: ['latin'], variable: '--font-geist-sans' });
 
 export const metadata: Metadata = {
-  title: 'Stock AI Platform',
-  description: 'Daily stock recommendations from multi-source analysis',
+  title: 'Safron Stock Recommendations',
+  description: 'Internal company stock recommendation model — Danelfin, Seeking Alpha, Investing Pro, TradingView',
 };
 
 export default function RootLayout({

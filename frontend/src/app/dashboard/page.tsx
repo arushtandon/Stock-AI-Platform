@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
@@ -43,18 +44,21 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       <nav className="border-b border-slate-700/50 bg-surface-900/50 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="text-xl font-semibold text-primary-500">Stock AI</Link>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/safron-logo.svg" alt="Safron" width={120} height={40} className="h-8 w-auto" />
+          </Link>
           <div className="flex gap-4">
             <Link href="/dashboard" className="text-white">Dashboard</Link>
             <Link href="/analysis" className="text-slate-400 hover:text-white">Analysis</Link>
             <Link href="/portfolio" className="text-slate-400 hover:text-white">Portfolio</Link>
             <Link href="/performance" className="text-slate-400 hover:text-white">Performance</Link>
+            <Link href="/integrations" className="text-slate-400 hover:text-white">Integrations</Link>
           </div>
         </div>
       </nav>
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-white">Top 20 Stock Picks</h1>
+          <h1 className="text-2xl font-bold text-white">Safron top 20 stock picks</h1>
           <button
             onClick={() => refetch()}
             className="flex items-center gap-2 text-slate-400 hover:text-white"

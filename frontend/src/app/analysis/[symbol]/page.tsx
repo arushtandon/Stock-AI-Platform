@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -42,8 +43,14 @@ export default function StockAnalysisPage() {
     <div className="min-h-screen">
       <nav className="border-b border-slate-700/50 bg-surface-900/50 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="text-xl font-semibold text-primary-500">Stock AI</Link>
-          <Link href="/dashboard" className="text-slate-400 hover:text-white">Dashboard</Link>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/safron-logo.svg" alt="Safron" width={120} height={40} className="h-8 w-auto" />
+          </Link>
+          <div className="flex gap-4">
+            <Link href="/dashboard" className="text-slate-400 hover:text-white">Dashboard</Link>
+            <Link href="/analysis" className="text-white">Analysis</Link>
+            <Link href="/integrations" className="text-slate-400 hover:text-white">Integrations</Link>
+          </div>
         </div>
       </nav>
       <main className="max-w-4xl mx-auto px-4 py-8">
