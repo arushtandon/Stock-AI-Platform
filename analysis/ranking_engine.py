@@ -1,20 +1,18 @@
 """
-Multi-source ranking engine.
-Composite Score = 0.35*Fundamental + 0.35*Technical + 0.20*Analyst + 0.10*Sentiment
-All scores normalized 0-100.
+Multi-source Safron ranking engine.
+Base composite model:
+  Composite = w_fund * Fundamental + w_tech * Technical + w_analyst * Analyst + w_sentiment * Sentiment
+Weights are adjusted by holding period so that short-term ideas lean more on technicals/momentum
+and long-term ideas lean more on fundamentals.
+All scores are normalized to 0-100.
 """
 from collections import defaultdict
 from typing import List
 
-from core.schemas import StockAnalysis, CompositeScore, DataSource
+from core.schemas import StockAnalysis, CompositeScore, DataSource, HoldingPeriod
 from analysis.fundamental_engine import aggregate_fundamental_by_symbol
 from analysis.technical_engine import aggregate_technical_by_symbol
-from config import (
-    WEIGHT_FUNDAMENTAL,
-    WEIGHT_TECHNICAL,
-    WEIGHT_ANALYST,
-    WEIGHT_SENTIMENT,
-)
+from config import WEIGHT_FUNDAMENTAL, WEIGHT_TECHNICAL, WEIGHT_ANALYST, WEIGHT_SENTIMENT
 
 
 # Map analyst rating text to 0-100
@@ -58,8 +56,27 @@ def _aggregate_sentiment_by_symbol(analyses: List[StockAnalysis]) -> dict[str, f
     }
 
 
-def build_composite_scores(analyses: List[StockAnalysis]) -> List[CompositeScore]:
-    """Build composite scores for all symbols present in analyses."""
+def _weights_for_period(holding_period: HoldingPeriod | None) -> tuple[float, float, float, float]:
+    """
+    Return (w_fund, w_tech, w_analyst, w_sentiment) for a given holding period.
+
+    - Short term / swing: emphasize technicals & sentiment
+    - Medium term: balanced (use config defaults)
+    - Long term: emphasize fundamentals & analyst view
+    """
+    if holding_period in (HoldingPeriod.SHORT_TERM, HoldingPeriod.SWING):
+        return (0.2, 0.55, 0.15, 0.10)
+    if holding_period == HoldingPeriod.LONG_TERM:
+        return (0.5, 0.25, 0.15, 0.10)
+    # medium term or None: use configured defaults
+    return (WEIGHT_FUNDAMENTAL, WEIGHT_TECHNICAL, WEIGHT_ANALYST, WEIGHT_SENTIMENT)
+
+
+def build_composite_scores(
+    analyses: List[StockAnalysis],
+    holding_period: HoldingPeriod | None = None,
+) -> List[CompositeScore]:
+    """Build Safron composite scores for all symbols present in analyses."""
     from datetime import datetime
 
     fund = aggregate_fundamental_by_symbol(analyses)
@@ -70,18 +87,15 @@ def build_composite_scores(analyses: List[StockAnalysis]) -> List[CompositeScore
     symbols = set(fund.keys()) | set(tech.keys()) | set(analyst.keys()) | set(sentiment.keys())
     source_breakdown = _source_breakdown(analyses)
 
+    w_fund, w_tech, w_analyst, w_sentiment = _weights_for_period(holding_period)
+
     result = []
     for sym in symbols:
         f = fund.get(sym, 50.0)
         t = tech.get(sym, 50.0)
         a = analyst.get(sym, 50.0)
         s = sentiment.get(sym, 50.0)
-        composite = (
-            WEIGHT_FUNDAMENTAL * f
-            + WEIGHT_TECHNICAL * t
-            + WEIGHT_ANALYST * a
-            + WEIGHT_SENTIMENT * s
-        )
+        composite = w_fund * f + w_tech * t + w_analyst * a + w_sentiment * s
         result.append(
             CompositeScore(
                 symbol=sym,

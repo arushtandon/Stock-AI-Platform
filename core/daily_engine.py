@@ -37,7 +37,7 @@ def generate_daily_recommendations(
 ) -> List[StockRecommendation]:
     """
     1. Run ingestion from all sources
-    2. Build composite scores
+    2. Build Safron composite scores (holding-period aware)
     3. Filter and select top N
     4. For each: entry, stop, take profit, risk/reward, sources
     """
@@ -47,7 +47,7 @@ def generate_daily_recommendations(
         logger.warning("No analyses collected")
         return []
 
-    composite_scores = build_composite_scores(analyses)
+    composite_scores = build_composite_scores(analyses, holding_period=holding_period)
     top = filter_and_rank(composite_scores, top_n=top_n)
 
     # Build source list per symbol from analyses
