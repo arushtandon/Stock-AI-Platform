@@ -90,11 +90,12 @@ Then open the **frontend** URL and check the dashboard for recommendations.
 
 ## Free tier limits (Render)
 
+- **One free PostgreSQL and one free Redis per account.** If you already have a free database or Redis from another project, the Blueprint will fail with "cannot have more than one active free tier database" or "cannot have more than 1 free tier Redis instance". The `render.yaml` in this repo uses **Starter** for the database and Redis so this project gets its own resources (~\$7 + ~\$10/mo). You can change back to `plan: free` only if this is the only project using free DB/Redis.
 - **Free web services** spin down after ~15 minutes of no traffic; the first request may be slow (cold start).
-- **Free PostgreSQL** is limited (e.g. 1 GB, 90-day expiration); for production, switch to a **Starter** or higher database in the Blueprint or in the dashboard.
-- **Free Redis** has usage limits; for heavy Celery use, consider a paid Redis plan.
+- **Free PostgreSQL** is limited (e.g. 1 GB, 90-day expiration); for production, **Starter** or higher is recommended.
+- **Free Redis** has usage limits; for heavy Celery use, use a paid plan.
 
-Upgrading the **database** and **worker** to paid plans keeps costs low (on the order of a few dollars to ~$15/mo total) while avoiding the $150/mo Vultr database.
+With **Starter** for DB + Redis + worker, total is still low (~\$25/mo) compared to Vultr's \$150/mo for managed DB alone.
 
 ---
 

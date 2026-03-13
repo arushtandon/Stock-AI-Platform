@@ -1,11 +1,12 @@
 # Stock AI Platform - Render Blueprint
 # Deploy: Render Dashboard → New → Blueprint → connect this repo.
-# Cost: Free/Starter Postgres + Free Redis + Free/Starter web (much cheaper than Vultr $150/mo).
+# Uses Starter for DB and Redis so you can have multiple (Render allows only 1 free DB + 1 free Redis per account).
+# Cost: ~$7 Postgres + ~$10 Redis + ~$7 worker + free API/frontend/cron ≈ $25/mo (still far below Vultr $150).
 
 databases:
   - name: stock-ai-db
     databaseName: stock_ai
-    plan: free  # 1 GB, 90-day limit; use starter (~$7/mo) for production
+    plan: starter  # Free tier = 1 per account; Starter lets this project have its own (~$7/mo)
 
 services:
   - type: keyvalue
@@ -13,7 +14,7 @@ services:
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
-    plan: free
+    plan: starter  # Free tier = 1 per account; Starter for this project (~$10/mo)
     maxmemoryPolicy: noeviction
 
   - type: web
