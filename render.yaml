@@ -59,7 +59,7 @@ services:
     region: oregon
     plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: celery -A workers.celery_app worker -l info -Q default,daily
+    startCommand: celery -A workers.celery_app worker -l info -Q default,daily --concurrency=1
     envVars:
       - key: PYTHONPATH
         value: .
