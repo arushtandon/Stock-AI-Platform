@@ -6,7 +6,7 @@
 databases:
   - name: stock-ai-db
     databaseName: stock_ai
-    plan: starter  # Free tier = 1 per account; Starter lets this project have its own (~$7/mo)
+    plan: basic-1gb  # Render paid Postgres plan name (~$7/mo). "starter" is invalid here.
 
 services:
   - type: keyvalue
@@ -14,7 +14,7 @@ services:
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
-    plan: starter  # Free tier = 1 per account; Starter for this project (~$10/mo)
+    plan: starter  # Key Value: starter is valid; free = 1 per account
     maxmemoryPolicy: noeviction
 
   - type: web

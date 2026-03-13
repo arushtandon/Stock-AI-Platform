@@ -101,6 +101,8 @@ With **Starter** for DB + Redis + worker, total is still low (~\$25/mo) compared
 
 ## Troubleshooting
 
+- **Sync fails (plan / "Starter" errors):** Render’s Blueprint uses specific plan names. For **PostgreSQL** use `plan: basic-1gb` (not `starter`). The repo’s `render.yaml` is updated. Push, then **Manual sync** again.
+- **Sync fails (billing):** Paid DB and Redis need a **payment method**. Render Dashboard → Account Settings → Billing → add a card.
 - **Build fails (Python):** Ensure `requirements.txt` is at the **repo root** and that the build command is `pip install -r requirements.txt`. No need to set `PYTHONPATH` if the repo root is the project root.
 - **Build fails (frontend):** Ensure **rootDir** is `frontend` and **NEXT_PUBLIC_API_URL** is set before building.
 - **API can’t connect to DB/Redis:** Blueprint links them automatically. If you created DB/Redis manually, set **DATABASE_URL** and **REDIS_HOST** / **REDIS_PORT** (or **REDIS_URL**) in the API and worker services.
