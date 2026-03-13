@@ -38,6 +38,8 @@ class PositionPerf:
     return_pct: float
     margin_used: float
     status: str  # TP / SL / OPEN
+    realised_pnl_usd: float = 0.0
+    realised_return_pct: float = 0.0
 
 
 def _get_current_price(symbol: str) -> float | None:
@@ -75,27 +77,42 @@ def compute_portfolio_performance(session: Session) -> Dict[str, Any]:
         if current is None:
             continue
         qty = CAPITAL_PER_POSITION / float(r.entry_price)
-        pnl_usd = (current - float(r.entry_price)) * qty
-        return_pct = (current - float(r.entry_price)) / float(r.entry_price) * 100.0
+        entry_f = float(r.entry_price)
+        pnl_usd = (current - entry_f) * qty
+        return_pct = (current - entry_f) / entry_f * 100.0
         status = "OPEN"
+        realised_usd = 0.0
+        realised_pct = 0.0
         if r.take_profit and current >= float(r.take_profit):
             status = "TP"
+            exit_p = float(r.take_profit)
+            realised_usd = (exit_p - entry_f) * qty
+            realised_pct = (exit_p - entry_f) / entry_f * 100.0
         elif r.stop_loss and current <= float(r.stop_loss):
             status = "SL"
+            exit_p = float(r.stop_loss)
+            realised_usd = (exit_p - entry_f) * qty
+            realised_pct = (exit_p - entry_f) / entry_f * 100.0
         positions.append(
             PositionPerf(
                 symbol=r.symbol,
-                entry_price=float(r.entry_price),
+                entry_price=entry_f,
                 current_price=float(current),
                 pnl_usd=float(pnl_usd),
                 return_pct=float(return_pct),
                 margin_used=CAPITAL_PER_POSITION,
                 status=status,
+                realised_pnl_usd=realised_usd,
+                realised_return_pct=realised_pct,
             )
         )
 
     total_notional = CAPITAL_PER_POSITION * len(positions)
     total_pnl = sum(p.pnl_usd for p in positions)
+    realised_pnl_usd = sum(p.realised_pnl_usd for p in positions)
+    unrealized_pnl_usd = sum(p.pnl_usd for p in positions if p.status == "OPEN")
+    capital_closed = sum(p.margin_used for p in positions if p.status in ("TP", "SL"))
+    realised_pnl_pct = (realised_pnl_usd / capital_closed * 100.0) if capital_closed else 0.0
     avg_return = (sum(p.return_pct for p in positions) / len(positions)) if positions else 0.0
     wins = sum(1 for p in positions if p.return_pct > 0)
     win_rate = (wins / len(positions) * 100.0) if positions else 0.0
@@ -116,8 +133,10 @@ def compute_portfolio_performance(session: Session) -> Dict[str, Any]:
         "capital_per_position": CAPITAL_PER_POSITION,
         "total_positions": len(positions),
         "total_notional": total_notional,
-        "unrealized_pnl_usd": total_pnl,
-        "unrealized_pnl_pct": (total_pnl / total_notional * 100.0) if total_notional else 0.0,
+        "unrealized_pnl_usd": unrealized_pnl_usd,
+        "unrealized_pnl_pct": (unrealized_pnl_usd / total_notional * 100.0) if total_notional else 0.0,
+        "realized_pnl_usd": realised_pnl_usd,
+        "realized_pnl_pct": realised_pnl_pct,
         "average_return_pct": avg_return,
         "win_rate_pct": win_rate,
         "max_drawdown_pct": max_dd * 100.0,
@@ -130,6 +149,8 @@ def compute_portfolio_performance(session: Session) -> Dict[str, Any]:
                 "return_pct": p.return_pct,
                 "margin_used": p.margin_used,
                 "status": p.status,
+                "realised_pnl_usd": p.realised_pnl_usd,
+                "realised_return_pct": p.realised_return_pct,
             }
             for p in positions
         ],

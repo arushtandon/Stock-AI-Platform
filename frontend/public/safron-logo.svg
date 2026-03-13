@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none">
-  <!-- Icon: rounded box with S -->
-  <rect x="2" y="2" width="44" height="44" rx="10" fill="#E07C3C"/>
-  <text x="24" y="30" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="white" text-anchor="middle">S</text>
+  <!-- Logo mark: abstract emblem (replace this file with your own logo) -->
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="none" stroke="#E07C3C" stroke-width="2.5"/>
+  <path d="M24 8 L32 24 L24 40 L16 24 Z" fill="#E07C3C"/>
+  <circle cx="24" cy="24" r="6" fill="#0f172a"/>
   <!-- SAFRON wordmark -->
   <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" letter-spacing="0.12em" fill="#F1F5F9">SAFRON</text>
 </svg>

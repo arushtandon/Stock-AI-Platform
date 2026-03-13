@@ -62,26 +62,38 @@ export default function PerformancePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div className="card p-4">
             <p className="text-slate-400 text-xs uppercase mb-1">Total positions</p>
             <p className="text-white text-lg font-semibold">{data.total_positions}</p>
           </div>
           <div className="card p-4">
+            <p className="text-slate-400 text-xs uppercase mb-1">Realized PnL (USD)</p>
+            <p className={(data.realized_pnl_usd ?? 0) >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
+              {(data.realized_pnl_usd ?? 0).toFixed(2)}
+            </p>
+          </div>
+          <div className="card p-4">
+            <p className="text-slate-400 text-xs uppercase mb-1">Realized PnL (%)</p>
+            <p className={(data.realized_pnl_pct ?? 0) >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
+              {(data.realized_pnl_pct ?? 0).toFixed(2)}%
+            </p>
+          </div>
+          <div className="card p-4">
             <p className="text-slate-400 text-xs uppercase mb-1">Unrealized PnL (USD)</p>
-            <p className={data.unrealized_pnl_usd >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
-              {data.unrealized_pnl_usd.toFixed(2)}
+            <p className={(data.unrealized_pnl_usd ?? 0) >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
+              {(data.unrealized_pnl_usd ?? 0).toFixed(2)}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-slate-400 text-xs uppercase mb-1">Unrealized PnL (%)</p>
-            <p className={data.unrealized_pnl_pct >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
-              {data.unrealized_pnl_pct.toFixed(2)}%
+            <p className={(data.unrealized_pnl_pct ?? 0) >= 0 ? 'text-emerald-400 text-lg font-semibold' : 'text-red-400 text-lg font-semibold'}>
+              {(data.unrealized_pnl_pct ?? 0).toFixed(2)}%
             </p>
           </div>
           <div className="card p-4">
             <p className="text-slate-400 text-xs uppercase mb-1">Win rate</p>
-            <p className="text-emerald-400 text-lg font-semibold">{data.win_rate_pct.toFixed(1)}%</p>
+            <p className="text-emerald-400 text-lg font-semibold">{(data.win_rate_pct ?? 0).toFixed(1)}%</p>
           </div>
         </div>
 

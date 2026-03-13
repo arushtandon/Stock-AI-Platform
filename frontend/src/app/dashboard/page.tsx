@@ -9,7 +9,7 @@ import { ArrowUpRight, RefreshCw } from 'lucide-react';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 async function fetchRecommendations() {
-  const res = await fetch(`${API_BASE}/api/v1/recommendations?limit=50`);
+  const res = await fetch(`${API_BASE}/api/v1/recommendations?limit=60`);
   if (!res.ok) throw new Error('Failed to fetch');
   return res.json();
 }
@@ -24,6 +24,8 @@ type Rec = {
   composite_score: number;
   holding_period: string;
   sources?: string[];
+  support_level?: number | null;
+  resistance_level?: number | null;
 };
 
 const HOLDING_PERIOD_GROUPS = [
@@ -161,6 +163,11 @@ export default function DashboardPage() {
                             {r.symbol}
                           </Link>
                           <p className="text-slate-500 text-xs truncate">{r.company_name || '—'}</p>
+                          {(key === 'short' || key === 'medium') && (r.support_level != null || r.resistance_level != null) && (
+                            <p className="text-slate-500 text-xs mt-0.5">
+                              S: {r.support_level != null ? Number(r.support_level).toFixed(2) : '—'} | R: {r.resistance_level != null ? Number(r.resistance_level).toFixed(2) : '—'}
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 text-right shrink-0">
                           <span className="text-slate-400 text-xs">

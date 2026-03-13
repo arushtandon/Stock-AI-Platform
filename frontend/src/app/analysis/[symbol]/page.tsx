@@ -62,8 +62,14 @@ export default function StockAnalysisPage() {
             <p className="text-2xl text-white">Entry: ${Number(r.entry_price)?.toFixed(2)}</p>
             <p className="text-red-400">Stop Loss: ${Number(r.stop_loss)?.toFixed(2)}</p>
             <p className="text-emerald-400">Take Profit: ${Number(r.take_profit)?.toFixed(2)}</p>
-            {r.support_level != null && <p className="text-slate-400">Support: ${Number(r.support_level).toFixed(2)}</p>}
-            {r.resistance_level != null && <p className="text-slate-400">Resistance: ${Number(r.resistance_level).toFixed(2)}</p>}
+            <div className="mt-4 pt-3 border-t border-slate-700">
+              <h4 className="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wider">Support / Resistance</h4>
+              {r.support_level != null && <p className="text-slate-300">Support: <span className="text-emerald-400/90">${Number(r.support_level).toFixed(2)}</span></p>}
+              {r.resistance_level != null && <p className="text-slate-300">Resistance: <span className="text-amber-400/90">${Number(r.resistance_level).toFixed(2)}</span></p>}
+              {(r.support_level != null || r.resistance_level != null) && (
+                <p className="text-slate-500 text-xs mt-1">From recent price action (short/mid term)</p>
+              )}
+            </div>
           </div>
           <div className="card p-6">
             <h3 className="text-slate-400 text-sm font-medium mb-2">Metrics</h3>

@@ -69,7 +69,7 @@ def integrations_status():
 def list_recommendations(
     request: Request,
     since: datetime | None = Query(None, description="Only recommendations after this time"),
-    limit: int = Query(TOP_N_RECOMMENDATIONS, ge=1, le=100),
+    limit: int = Query(60, ge=1, le=100),
     holding_period: str | None = Query(None, description="Filter by holding period: short_term, swing, medium_term, long_term"),
     _=Depends(get_current_user_optional),
 ):
