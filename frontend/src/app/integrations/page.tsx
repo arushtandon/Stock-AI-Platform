@@ -14,10 +14,10 @@ async function fetchIntegrationStatus() {
 }
 
 const SOURCES = [
-  { id: 'danelfin', name: 'Danelfin', envVar: 'DANELFIN_API_KEY', url: 'https://www.danelfin.com' },
-  { id: 'seeking_alpha', name: 'Seeking Alpha Premium', envVar: 'SEEKING_ALPHA_API_KEY', url: 'https://seekingalpha.com' },
-  { id: 'investing_pro', name: 'Investing.com Pro', envVar: 'INVESTING_PRO_API_KEY', url: 'https://www.investing.com' },
-  { id: 'tradingview', name: 'TradingView', envVar: 'TRADINGVIEW_API_KEY', url: 'https://www.tradingview.com' },
+  { id: 'danelfin', name: 'Danelfin', envVar: 'DANELFIN_API_KEY', url: 'https://danelfin.com/pricing/api', note: 'Official API; subscribe for key' },
+  { id: 'seeking_alpha', name: 'Seeking Alpha (via RapidAPI)', envVar: 'SEEKING_ALPHA_API_KEY', url: 'https://rapidapi.com/apidojo/api/seeking-alpha', note: 'Use RapidAPI key for Seeking Alpha API' },
+  { id: 'investing_pro', name: 'Investing.com Pro', envVar: 'INVESTING_PRO_API_KEY', url: 'https://www.investing.com', note: 'No official API; optional / third-party' },
+  { id: 'tradingview', name: 'TradingView / market data', envVar: 'TRADINGVIEW_API_KEY', url: 'https://www.tradingview.com', note: 'Use a market data API key (e.g. EOD, Polygon)' },
 ] as const;
 
 export default function IntegrationsPage() {
@@ -47,7 +47,7 @@ export default function IntegrationsPage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-white mb-2">Premium data source credentials</h1>
         <p className="text-slate-400 mb-8">
-          Add your API keys or login credentials for each service below. Recommendations are aggregated from these sources. Set variables in <strong>Render → stock-ai-api → Environment</strong> (or in your deployment env). Keys are never shown in the UI.
+          All four platforms (Danelfin, Seeking Alpha, Investing.com Pro, TradingView) are wired into the pipeline. Add API keys below to use live data from Danelfin and Seeking Alpha; Investing Pro and TradingView use built-in market data when keys are not set. Set variables in <strong>Render → stock-ai-api → Environment</strong>. Keys are never shown in the UI.
         </p>
 
         <div className="space-y-4 mb-10">
@@ -60,6 +60,7 @@ export default function IntegrationsPage() {
                   <div>
                     <h2 className="font-semibold text-white">{source.name}</h2>
                     <p className="text-slate-500 text-sm">Env: <code className="bg-slate-800 px-1 rounded">{source.envVar}</code></p>
+                    {source.note && <p className="text-slate-600 text-xs mt-0.5">{source.note}</p>}
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -92,7 +93,7 @@ export default function IntegrationsPage() {
             <li>Save and redeploy the API. This page will show &quot;Connected&quot; when the key is set.</li>
           </ol>
           <p className="text-slate-500 text-sm mt-4">
-            Without credentials, the model uses demo/synthetic data for rankings. With credentials, live data from each platform is used to produce recommendations.
+            Danelfin and Seeking Alpha use live API data when keys are set; otherwise they use demo data. Investing.com Pro and TradingView always contribute real data (via yfinance) so all four platforms are present in the ranking engine.
           </p>
         </div>
 

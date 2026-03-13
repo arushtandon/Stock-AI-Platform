@@ -80,12 +80,15 @@ def save_recommendations(recommendations: List[StockRecommendation]) -> int:
 def get_latest_recommendations(
     since: Optional[datetime] = None,
     limit: int = 20,
+    holding_period: Optional[str] = None,
 ) -> List[dict]:
     session = Session()
     try:
         q = session.query(RecommendationModel).order_by(RecommendationModel.published_at.desc())
         if since:
             q = q.filter(RecommendationModel.published_at >= since)
+        if holding_period:
+            q = q.filter(RecommendationModel.holding_period == holding_period)
         rows = q.limit(limit).all()
         return [
             {

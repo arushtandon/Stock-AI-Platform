@@ -70,10 +70,11 @@ def list_recommendations(
     request: Request,
     since: datetime | None = Query(None, description="Only recommendations after this time"),
     limit: int = Query(TOP_N_RECOMMENDATIONS, ge=1, le=100),
+    holding_period: str | None = Query(None, description="Filter by holding period: short_term, swing, medium_term, long_term"),
     _=Depends(get_current_user_optional),
 ):
-    """Top N daily stock picks (cached in DB)."""
-    return get_latest_recommendations(since=since, limit=limit)
+    """Top N daily stock picks (cached in DB). Optional holding_period filter."""
+    return get_latest_recommendations(since=since, limit=limit, holding_period=holding_period)
 
 
 @app.post("/api/v1/recommendations/refresh")

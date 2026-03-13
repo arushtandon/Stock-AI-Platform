@@ -20,14 +20,14 @@ def main():
     if analyses:
         save_analyses(analyses)
         print(f"Saved {len(analyses)} analyses.")
-    print("Generating recommendations...")
-    recs = generate_daily_recommendations(
-        holding_period=HoldingPeriod.MEDIUM_TERM,
-        top_n=20,
-    )
-    if recs:
-        save_recommendations(recs)
-        print(f"Saved {len(recs)} recommendations.")
+    print("Generating recommendations for each holding period...")
+    all_recs = []
+    for period in (HoldingPeriod.SHORT_TERM, HoldingPeriod.SWING, HoldingPeriod.MEDIUM_TERM, HoldingPeriod.LONG_TERM):
+        recs = generate_daily_recommendations(holding_period=period, top_n=10)
+        all_recs.extend(recs)
+    if all_recs:
+        save_recommendations(all_recs)
+        print(f"Saved {len(all_recs)} recommendations (short/swing/medium/long).")
     else:
         print("No recommendations generated.")
     print("Done. Start the API and open the dashboard.")

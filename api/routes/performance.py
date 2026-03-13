@@ -1,19 +1,18 @@
-from fastapi import APIRouter, Query, Depends
-from api.auth import require_subscription
+from fastapi import APIRouter
+from analysis.performance_engine import compute_portfolio_performance
+from database.repository import Session
 
 router = APIRouter(prefix="/performance", tags=["performance"])
 
 
 @router.get("")
-def get_performance(
-    days: int = Query(30, ge=1, le=365),
-    _=Depends(require_subscription),
-):
-    """Historical performance: win rate, avg return, equity curve (placeholder)."""
-    return {
-        "win_rate": 0.0,
-        "average_return_pct": 0.0,
-        "max_drawdown_pct": 0.0,
-        "equity_curve": [],
-        "monthly_returns": [],
-    }
+def get_performance():
+    """Combined and per-position performance based on latest recommendations.
+
+    Assumes USD 100,000 capital per recommendation.
+    """
+    session = Session()
+    try:
+        return compute_portfolio_performance(session)
+    finally:
+        session.close()
