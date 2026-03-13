@@ -103,6 +103,7 @@ With **Starter** for DB + Redis + worker, total is still low (~\$25/mo) compared
 
 - **Sync fails (plan / "Starter" errors):** Render’s Blueprint uses specific plan names. For **PostgreSQL** use `plan: basic-1gb` (not `starter`). The repo’s `render.yaml` is updated. Push, then **Manual sync** again.
 - **Sync fails (billing):** Paid DB and Redis need a **payment method**. Render Dashboard → Account Settings → Billing → add a card.
+- **API or worker "deploy failed":** Open the service (e.g. **stock-ai-api**) → **Logs** tab and check the **Build** and **Deploy** logs for the exact error. Common fixes: (1) `PYTHONPATH=.` is set in the Blueprint so imports work; (2) `apache-airflow` was removed from `requirements.txt` to avoid heavy builds; (3) add `runtime.txt` with `python-3.11.7` at repo root for Python version. Push changes and trigger **Manual Deploy** on the service.
 - **Build fails (Python):** Ensure `requirements.txt` is at the **repo root** and that the build command is `pip install -r requirements.txt`. No need to set `PYTHONPATH` if the repo root is the project root.
 - **Build fails (frontend):** Ensure **rootDir** is `frontend` and **NEXT_PUBLIC_API_URL** is set before building.
 - **API can’t connect to DB/Redis:** Blueprint links them automatically. If you created DB/Redis manually, set **DATABASE_URL** and **REDIS_HOST** / **REDIS_PORT** (or **REDIS_URL**) in the API and worker services.
