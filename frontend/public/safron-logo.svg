@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
-  <rect width="36" height="36" rx="6" fill="#8B5CF6"/>
-  <text x="42" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Safron</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none">
+  <!-- Icon: rounded box with S -->
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="#E07C3C"/>
+  <text x="24" y="30" font-family="system-ui, sans-serif" font-size="28" font-weight="800" fill="white" text-anchor="middle">S</text>
+  <!-- SAFRON wordmark -->
+  <text x="56" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" letter-spacing="0.12em" fill="#F1F5F9">SAFRON</text>
 </svg>

@@ -15,7 +15,15 @@ if __name__ == "__main__":
     analyses = run_ingestion(limit_per_source=200)
     if analyses:
         save_analyses(analyses)
-    recs = generate_daily_recommendations(holding_period=HoldingPeriod.MEDIUM_TERM, top_n=20)
-    if recs:
-        save_recommendations(recs)
-    print(len(recs), "recommendations saved")
+    all_recs = []
+    for period in (
+        HoldingPeriod.SHORT_TERM,
+        HoldingPeriod.SWING,
+        HoldingPeriod.MEDIUM_TERM,
+        HoldingPeriod.LONG_TERM,
+    ):
+        recs = generate_daily_recommendations(holding_period=period, top_n=10)
+        all_recs.extend(recs)
+    if all_recs:
+        save_recommendations(all_recs)
+    print(len(all_recs), "recommendations saved (short/swing/medium/long)")
